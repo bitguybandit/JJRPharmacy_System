@@ -23,15 +23,16 @@ if (mysqli_num_rows($result) > 0) {
         // Store session data
         $_SESSION['userID'] = $row['userID'];
         $_SESSION['role'] = $row['role'];
+         // ✅ add this
+
 
         // Redirect based on role
-        if ($row['role'] == 'staff') {
-            header("Location: staff_dashboard.php");
-        } else {
-            header("Location: customer_dashboard.php");
-        }
-        exit();
-    } else {
+        if ($row['role'] == 'admin') {
+    header("Location: admin_dashboard.php");
+} elseif ($row['role'] == 'staff') {
+    header("Location: staff_dashboard.php");
+}
+ } else {
         echo "<script>alert('Incorrect password! Please try again.'); window.location='login.html';</script>";
     }
 } else {
