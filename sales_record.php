@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Security Check
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'admin') {
     header("Location: login.html");
     exit();
 }
@@ -68,7 +68,7 @@ table tr:nth-child(even) { background-color: #f0fff0; }
 <body>
 
 <header>
-    <a href="staff_dashboard.php" class="header-btn-back">⬅️ Back</a>
+    <a href="admin_dashboard.php" class="header-btn-back">⬅️ Back</a>
     <span class="header-title">Sales Record</span>
     <span></span>
 </header>
@@ -122,7 +122,7 @@ function confirmDelete(saleId) {
     <a href="medicine_list.php">💊 Medicine</a>
     <a href="staff_list.php">👨‍⚕️ Staff</a>
     <a href="sales_record.php" class="active">📈 Sales</a>
-    <a href="settings.php">⚙️ Settings</a>
+    <a href="setting.php">⚙️ Settings</a>
 </div>
 
 </body>
