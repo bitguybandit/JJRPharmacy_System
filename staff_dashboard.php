@@ -62,19 +62,12 @@ $conn->close();
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <a href="staff_dashboard.php" class="active">🏠 Home</a>
-    <a href="medicine_list.php">💊 Medicine</a>
-    <a href="staff_list.php">👨‍⚕️ Staff</a>
-    <a href="sales_record.php">📈 Sales</a>
-    <a href="setting.php">⚙️ Settings</a>
-</div>
+<?php include 'sidebar.php'; ?>
 
 <!-- Main -->
 <div class="main-content">
     <header>
-        <span class="header-title">JJR MediTrack Dashboard</span>
+        <span class="header-title">💊JJR MediTrack Dashboard</span>
         <a href="transaction_receipt.php" class="receipt-btn">🧾 Receipt</a>
     </header>
 
@@ -122,8 +115,13 @@ $conn->close();
                             <tr>
                                 <td><?= htmlspecialchars($row['name']) ?></td>
                                 <td><?= $row['stockquantity'] ?></td>
-                                <!-- Changed reorder link to direct to add_medicine.php -->
-                                <td><a href="add_medicine.php" class="reorder">Reorder</a></td>
+                                <td>
+                                    <?php if ($_SESSION['role'] == 'admin'): ?>
+                                        <a href="add_medicine.php" class="reorder">Reorder</a>
+                                    <?php else: ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
@@ -141,7 +139,13 @@ $conn->close();
                             <tr>
                                 <td><?= htmlspecialchars($row['name']) ?></td>
                                 <td><?= date("m/d/Y", strtotime($row['expiredate'])) ?></td>
-                                <td><a href="delete_medicine.php?id=<?= urlencode($row['medicineID']) ?>" class="delete" onclick="return confirm('Are you sure you want to remove this medicine?')">Delete</a></td>
+                                <td>
+                                    <?php if ($_SESSION['role'] == 'admin'): ?>
+                                        <a href="delete_medicine.php?id=<?= urlencode($row['medicineID']) ?>" class="delete" onclick="return confirm('Are you sure you want to remove this medicine?')">Delete</a>
+                                    <?php else: ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
