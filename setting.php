@@ -1,10 +1,11 @@
 <?php
 session_start();
 // Security Check
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: login.html");
     exit();
 }
+
 
 $firstName = $_SESSION['firstName'] ?? 'Staff';
 $lastName = $_SESSION['lastName'] ?? '';
@@ -80,7 +81,17 @@ h1 { color: #0f8e33; margin-top: 0; font-size: 24px; }
 <body>
 
 <header>
-    <a href="staff_dashboard.php" class="header-btn-back">⬅️ Back</a>
+    <?php
+    if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$backLink = ($_SESSION['role'] === 'admin') ? 'admin_dashboard.php' : 'staff_dashboard.php';
+?>
+
+    <!-- Back Button to Dashboard -->
+    <a href="<?php echo $backLink; ?>" class="header-btn-back">⬅️ Dashboard</a>
+
     <span class="header-title">Settings & Profile</span>
     <span></span>
 </header>
@@ -127,7 +138,7 @@ h1 { color: #0f8e33; margin-top: 0; font-size: 24px; }
     <a href="medicine_list.php">💊 Medicine</a>
     <a href="staff_list.php">👨‍⚕️ Staff</a>
     <a href="sales_record.php">📈 Sales</a>
-    <a href="settings.php" class="active">⚙️ Settings</a>
+    <a href="setting.php" class="active">⚙️ Settings</a>
 </div>
 
 </body>
