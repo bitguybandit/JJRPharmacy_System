@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Security Check
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: login.html");
     exit();
 }
@@ -162,7 +162,7 @@ input[type=submit]:hover { background: #2f7d38; }
 <body>
 
 <header>
-    <a href="staff_dashboard.php" class="header-btn-back">⬅️ Dashboard</a>
+    <a href="admin_dashboard.php" class="header-btn-back">⬅️ Dashboard</a>
     
     <span class="header-title">Add Medicine to Inventory</span>
     
