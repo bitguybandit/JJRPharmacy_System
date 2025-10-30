@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Security Check: Only 'staff' role can access this page
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'admin') {
     header("Location: login.html");
     exit();
 }
@@ -155,7 +155,7 @@ form button:hover { background: #bbb; }
 <label>Role:</label>
 <select name="role" required>
     <option value="staff" <?= $editMode && $staff['role']=='staff' ? 'selected' : '' ?>>Staff</option>
-    <option value="patient" <?= $editMode && $staff['role']=='patient' ? 'selected' : '' ?>>Patient</option>
+    <option value="admin" <?= $editMode && $admin['role']=='admin' ? 'selected' : '' ?>>admin</option>
 </select>
 
 <input type="submit" name="<?= $editMode ? 'update_staff' : 'add_staff' ?>" value="<?= $editMode ? 'Update Staff' : 'Add Staff' ?>">
@@ -169,7 +169,7 @@ form button:hover { background: #bbb; }
 <a href="staff_dashboard.php">🏠 Home</a>
 <a href="medicine_list.php">💊 Medicine</a>
 <a href="staff_list.php">👨‍⚕️ Staff</a>
-<a href="settings.php">⚙️ Settings</a>
+<a href="setting.php">⚙️ Settings</a>
 </div>
 </body>
 </html>
