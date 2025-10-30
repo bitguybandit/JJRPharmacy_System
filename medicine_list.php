@@ -1,7 +1,9 @@
+
 <?php
+
 session_start();
 // Security Check
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: login.html");
     exit();
 }
@@ -12,7 +14,7 @@ if (!$conn) {
     // In a production environment, you might log this instead of showing it to the user.
     die("Connection failed: " . mysqli_connect_error());
 }
-
+$role = $_SESSION['role'];
 // --- Handle INLINE UPDATE MEDICINE LOGIC (AJAX POST) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update_inline') {
     $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
@@ -294,10 +296,24 @@ td[contenteditable="true"] { background-color: #ffffe0; outline: 2px solid #47d1
 </style>
 </head>
 <body>
+    
 
 <header>
     <!-- Back Button to Dashboard -->
-    <a href="staff_dashboard.php" class="header-btn-back">⬅️ Dashboard</a>
+     <?php
+// Make sure session is started and role is available
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$backLink = ($_SESSION['role'] === 'admin') ? 'admin_dashboard.php' : 'staff_dashboard.php';
+?>
+
+    <!-- Back Button to Dashboard -->
+    <a href="<?php echo $backLink; ?>" class="header-btn-back">⬅️ Dashboard</a>
+
+
+
     
     <span class="header-title">Medicine Inventory</span>
     
@@ -354,9 +370,14 @@ td[contenteditable="true"] { background-color: #ffffe0; outline: 2px solid #47d1
     </div>
     
     <!-- Medicine Table Header & Add Button -->
+     
     <div class="table-controls">
+        <?php if ($_SESSION['role'] === 'admin'): ?>
         <a href="add_medicine.php" class="add-btn">➕ Add Medicine</a>
+        <?php endif; ?>
     </div>
+
+    
 
     <!-- Medicine List Table -->
     <table>
@@ -371,28 +392,39 @@ td[contenteditable="true"] { background-color: #ffffe0; outline: 2px solid #47d1
             </tr>
         </thead>
         <tbody>
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while($row = $result->fetch_assoc()): ?>
-                <tr data-id="<?= $row['medicineID'] ?>">
-                    <td style="text-align: center;">
-                        <img src="<?= htmlspecialchars($row['image_path'] ?? 'placeholder.jpg') ?>" 
-                             alt="<?= htmlspecialchars($row['name']) ?>" 
-                             class="medicine-img"
-                             onerror="this.onerror=null; this.src='https://placehold.co/40x40/ccc/white?text=No+Img';">
-                    </td>
-                    <td contenteditable="false" data-field="name" data-type="text"><?= htmlspecialchars($row['name']) ?></td>
-                    <td contenteditable="false" data-field="manufacture" data-type="text"><?= htmlspecialchars($row['manufacture'] ?? 'N/A') ?></td>
-                    <td contenteditable="false" data-field="stockquantity" data-type="number" style="text-align: center;"><?= $row['stockquantity'] ?></td>
-                    <td contenteditable="false" data-field="price" data-type="price">₱ <span data-value="<?= $row['price'] ?>"><?= number_format($row['price'], 2) ?></span></td>
-                    <td class="actions" style="text-align: center;">
-                        <!-- 'Edit' button toggles contenteditable state for the row -->
-                        <button onclick="toggleEdit(<?= $row['medicineID'] ?>, this)" class="edit-btn" title="Edit Row">✏️ Edit</button>
-                        <!-- 'Save' button is hidden until editing starts -->
-                        <button onclick="saveInlineEdit(<?= $row['medicineID'] ?>, this)" class="save-btn hidden" title="Save Changes">💾 Save</button>
-                        <!-- Delete Button (triggers modal) -->
-                        <button onclick="openDeleteModal(<?= $row['medicineID'] ?>, '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>')" class="delete-btn" title="Delete Row">🗑️ Delete</button>
-                    </td>
-                </tr>
+<?php
+$role = $_SESSION['role'] ?? 'staff'; // fallback for safety
+
+if ($result && $result->num_rows > 0):
+    while($row = $result->fetch_assoc()):
+?>
+    <tr data-id="<?= $row['medicineID'] ?>">
+        <td style="text-align: center;">
+            <img src="<?= htmlspecialchars($row['image_path'] ?? 'placeholder.jpg') ?>" 
+                 alt="<?= htmlspecialchars($row['name']) ?>" 
+                 class="medicine-img"
+                 onerror="this.onerror=null; this.src='https://placehold.co/40x40/ccc/white?text=No+Img';">
+        </td>
+        <td contenteditable="false" data-field="name" data-type="text"><?= htmlspecialchars($row['name']) ?></td>
+        <td contenteditable="false" data-field="manufacture" data-type="text"><?= htmlspecialchars($row['manufacture'] ?? 'N/A') ?></td>
+        <td contenteditable="false" data-field="stockquantity" data-type="number" style="text-align: center;"><?= $row['stockquantity'] ?></td>
+        <td contenteditable="false" data-field="price" data-type="price">₱ 
+            <span data-value="<?= $row['price'] ?>"><?= number_format($row['price'], 2) ?></span>
+        </td>
+
+        <td class="actions" style="text-align: center;">
+            <?php if ($role === 'admin'): ?>
+                <!-- Admin can edit, save, and delete -->
+                <button onclick="toggleEdit(<?= $row['medicineID'] ?>, this)" class="edit-btn" title="Edit Row">✏️ Edit</button>
+                <button onclick="saveInlineEdit(<?= $row['medicineID'] ?>, this)" class="save-btn hidden" title="Save Changes">💾 Save</button>
+                <button onclick="openDeleteModal(<?= $row['medicineID'] ?>, '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>')" class="delete-btn" title="Delete Row">🗑️ Delete</button>
+            <?php else: ?>
+                <!-- Staff can view only -->
+                <span style="color: gray;">View Only</span>
+            <?php endif; ?>
+        </td>
+    </tr>
+
                 <?php endwhile; ?>
             <?php else: ?>
                 <tr>
@@ -407,7 +439,7 @@ td[contenteditable="true"] { background-color: #ffffe0; outline: 2px solid #47d1
     <a href="staff_dashboard.php">🏠 Home</a>
     <a href="medicine_list.php">💊 Medicine</a>
     <a href="staff_list.php">👨‍⚕️ Staff</a>
-    <a href="settings.php">⚙️ Settings</a>
+    <a href="setting.php">⚙️ Settings</a>
 </div>
 
 <!-- Custom Delete Confirmation Modal -->
