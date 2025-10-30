@@ -25,13 +25,12 @@ $sql = "INSERT INTO users (firstname, lastname, username, email, password, role)
 if (mysqli_query($conn, $sql)) {
     $userID = mysqli_insert_id($conn);
 
+    // ✅ only insert staff details if role is staff
     if ($role == 'staff') {
-        mysqli_query($conn, "INSERT INTO staff (userID, bdate, address, gender, contactnumber)
-                             VALUES ('$userID', '$bdate', '$address', '$gender', '$contact')");
-    } else {
-        mysqli_query($conn, "INSERT INTO customer (userID, bdate, address, gender)
-                             VALUES ('$userID', '$bdate', '$address', '$gender')");
-    }
+    mysqli_query($conn, "INSERT INTO staff (userID, bdate, address, gender, contactnumber)
+                         VALUES ('$userID', '$bdate', '$address', '$gender', '$contact')");
+}
+
 
     echo "<script>alert('Registration successful! Please login.'); window.location='login.html';</script>";
 } else {
