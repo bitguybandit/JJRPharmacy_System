@@ -1,14 +1,12 @@
 <?php
 // Start output buffering to prevent header errors
-ob_start(); 
 session_start();
-
 // Security Check
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
+if (!isset($_SESSION['userID']) || !in_array($_SESSION['role'], ['admin', 'staff'])) {
     header("Location: login.html");
-    ob_end_flush();
     exit();
 }
+
 
 $conn = mysqli_connect("localhost", "root", "", "jjrmeditrack_db");
 if (!$conn) {
@@ -145,9 +143,33 @@ h1 { color: #0f8e33; margin-top: 0; font-size: 24px; }
 .bottom-nav a{color:white;text-decoration:none;font-size:14px;text-align:center;}
 .bottom-nav a:hover{color:#e6ffe6;}
 .bottom-nav a.active { font-weight: bold; color: #f7ff00; }
+.suggestions {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 250px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 999;
+  margin-top: 2px;
+}
+
+.suggestion-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #e0f7e9;
+}
+
 </style>
 </head>
 <body>
+
+
 
 <header>
     <a href="staff_dashboard.php" class="header-btn-back">⬅️ Back</a>
@@ -165,8 +187,11 @@ h1 { color: #0f8e33; margin-top: 0; font-size: 24px; }
         </div>
         
         <div class="form-group">
-            <label for="medicineBought">Medicine Bought</label>
-            <input type="text" id="medicineBought" name="medicineBought" placeholder="e.g. Paracetamol" required value="<?= htmlspecialchars($_POST['medicineBought'] ?? '') ?>">
+
+            <label for="medicine">Medicine Bought</label>
+            <input type="text" id="medicineBought" name="medicineBought" placeholder="e.g. Paracetamol" autocomplete="off" required>
+            <div id="suggestions" class="suggestions"></div>
+            <div class="form-group" style="position: relative;"></div>
         </div>
         
         <div class="form-group">
@@ -184,6 +209,39 @@ h1 { color: #0f8e33; margin-top: 0; font-size: 24px; }
             <a href="staff_dashboard.php" class="btn btn-cancel">Cancel Transaction</a>
         </div>
     </form>
+    <script>
+const medicineInput = document.getElementById("medicineBought");
+const suggestionBox = document.getElementById("suggestions");
+const priceInput = document.getElementById("price");
+
+medicineInput.addEventListener("input", () => {
+  const term = medicineInput.value.trim();
+
+  if (term.length < 1) {
+    suggestionBox.innerHTML = "";
+    return;
+  }
+
+  fetch(`get_medicine.php?term=${encodeURIComponent(term)}`)
+    .then(res => res.json())
+    .then(data => {
+      suggestionBox.innerHTML = "";
+      data.forEach(item => {
+        const div = document.createElement("div");
+        div.classList.add("suggestion-item");
+        div.innerHTML = `<strong>${item.name}</strong> — ₱${item.price} (${item.stock} left)`;
+        div.onclick = () => {
+          medicineInput.value = item.name;
+          priceInput.value = item.price;
+          suggestionBox.innerHTML = "";
+        };
+        suggestionBox.appendChild(div);
+      });
+    })
+    .catch(() => suggestionBox.innerHTML = "");
+});
+</script>
+
 </div>
 
 <div class="bottom-nav">
