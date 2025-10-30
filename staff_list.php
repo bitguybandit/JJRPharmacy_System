@@ -1,10 +1,12 @@
 <?php
 session_start();
 // Security Check: Only 'staff' role can access this page
-if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'staff') {
-    header("Location: login.html");
+// Security Check: Only 'admin' role can access this page
+if (!isset($_SESSION['userID']) || $_SESSION['role'] != 'admin') {
+    header("Location: staff_dashboard.php"); // redirect staff back to their dashboard
     exit();
 }
+
 
 // Database Connection
 $conn = mysqli_connect("localhost", "root", "", "jjrmeditrack_db");
@@ -28,8 +30,11 @@ if (isset($_GET['delete'])) {
 }
 
 // FETCH ALL STAFF (excluding the password column for security)
-$result = $conn->query("SELECT userID, firstname, lastname, username, email, role, createdAt FROM users WHERE role='staff' ORDER BY userID DESC");
-?>
+$result = $conn->query("SELECT userID, firstname, lastname, username, email, role, createdAt 
+                        FROM users 
+                        WHERE role='staff' 
+                        ORDER BY userID DESC");
+                        ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -110,7 +115,19 @@ table th { background: #47d16b; color: white; }
 <body>
 
 <header>
-    <a href="staff_dashboard.php" class="header-btn-back">⬅️ Dashboard</a>
+<?php
+// Make sure session is started and role is available
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$backLink = ($_SESSION['role'] === 'admin') ? 'admin_dashboard.php' : 'staff_dashboard.php';
+?>
+<header>
+    <!-- Back Button to Dashboard -->
+    <a href="<?php echo $backLink; ?>" class="header-btn-back">⬅️ Dashboard</a>
+</header>
+
     
     <span class="header-title">Manage Staff</span>
     
@@ -156,7 +173,7 @@ table th { background: #47d16b; color: white; }
 <a href="staff_dashboard.php">🏠 Home</a>
 <a href="medicine_list.php">💊 Medicine</a>
 <a href="staff_list.php">👨‍⚕️ Staff</a>
-<a href="settings.php">⚙️ Settings</a>
+<a href="setting.php">⚙️ Settings</a>
 </div>
 </body>
 </html>
